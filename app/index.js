@@ -7,7 +7,6 @@ module.exports = generators.Base.extend({
     },
     writing: {
         projectFiles: function () {
-            this.spawnCommand('git', ['clone', 'git@github.com:louiswilbrink/app-generator.git', 'louis']);
             this.fs.copyTpl(
                 this.templatePath('louis.js'),
                 this.destinationPath('louis/config/louis.js')
