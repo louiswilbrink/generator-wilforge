@@ -7,15 +7,24 @@ module.exports = generators.Base.extend({
     },
     writing: {
         projectFiles: function () {
-            this.fs.copyTpl(
-                this.templatePath('louis.js'),
-                this.destinationPath('louis/config/louis.js')
-            );
-        },
-        serverFiles: function () {
-        },
-        appFiles: function () {
-        },
+            var files   = this.expandFiles('**/*', { cwd: this.sourceRoot(), dot: true });
+            var ignores = [
+                '.git',
+                '.gitignore',
+                'README.md',
+            ]; 
+
+            files.forEach(function (file) {
+                if (ignores.indexOf(file) !== -1) {
+                    return;
+                }
+
+                this.fs.copyTpl(
+                    this.templatePath(file),
+                    this.destinationPath(file)
+                );
+            }, this);
+        }
     },
     prompting: function () {
         var done = this.async();
@@ -37,9 +46,12 @@ module.exports = generators.Base.extend({
             this.appName = answers.name;
             this.firebaseEndpoint = answers.firebaseEndpoint;
 
+            // Create configuration file.
             done();
         }.bind(this));
     },
     install: function () {
+        //this.npmInstall();
+        //this.bowerInstall();
     }
 });
