@@ -37,10 +37,7 @@ module.exports = generators.Base.extend({
     },
     configuring: function () {
         // Create configuration file.
-        console.log('Writing configuration file..');
-        console.log('configuration - this.firebaseEndpoint', this.firebaseEndpoint);
-
-        var srcCode = fs.readFileSync(__dirname + '/templates/config/configuration.js');
+        var srcCode = fs.readFileSync(__dirname + '/templates/config/empty-configuration.js');
         var configAst = esprima.parse(srcCode, { loc: false, comment: true });
 
         var module = configAst.body[2]['expression']['right']['properties'];
@@ -69,14 +66,7 @@ module.exports = generators.Base.extend({
         var output = escodegen.generate(configAst);
 
         // Write to configuration.js, including user-provided platform creds.
-        fs.writeFile(__dirname + '/templates/config/configuration.js', output, function (error) {
-            if (error) {
-                console.log('error writing configuration.js');
-            }
-            else {
-                console.log('Successfully wrote configuration.js');
-            }
-        });
+        fs.writeFileSync(__dirname + '/templates/config/temp-configuration.js', output);
     },
     writing: {
         projectFiles: function () {
@@ -85,10 +75,20 @@ module.exports = generators.Base.extend({
                 '.git',
                 '.gitignore',
                 'README.md',
+                'config/empty-configuration.js'
             ]; 
 
             files.forEach(function (file) {
                 if (ignores.indexOf(file) !== -1) {
+                    return;
+                }
+
+                // Rename the temporary configuration file during copy.
+                if (file === 'config/temp-configuration.js') {
+                    this.fs.copyTpl(
+                        this.templatePath(file),
+                        this.destinationPath('config/configuration.js')
+                    );
                     return;
                 }
 
@@ -100,7 +100,15 @@ module.exports = generators.Base.extend({
         }
     },
     install: function () {
-        //this.npmInstall();
-        //this.bowerInstall();
+        this.npmInstall();
+        this.bowerInstall();
+    },
+    end: function () {
+        // Remove temp-configuration.js
+        fs.unlink(__dirname + '/templates/config/temp-configuration.js', function (error) {
+            if (error) {
+                console.log('Error removing temp-configuration.js', error);
+            }
+        });
     }
 });
