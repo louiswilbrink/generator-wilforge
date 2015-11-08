@@ -2,3 +2,4 @@ node_modules/
 app/templates/.git/
 app/templates/.gitignore
 app/templates/README.md
+*.swp

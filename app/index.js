@@ -22,6 +22,11 @@ module.exports = generators.Base.extend({
             default: 'https://wilforge-generator.firebaseio.com'
         }, {
             type: 'input',
+            name: 'mandrillApiKey',
+            message: 'What\'s your Mandrill Api Key? ',
+            default: 'keJof0bEYRH6hJopQBKRpw'
+        }, {
+            type: 'input',
             name: 'sessionSecret',
             message: 'Make up a session secret passphrase: ',
             default: 'keyboard cat'
@@ -31,6 +36,7 @@ module.exports = generators.Base.extend({
             this.appName = answers.name;
             this.firebaseEndpoint = answers.firebaseEndpoint;
             this.sessionSecret = answers.sessionSecret;
+            this.mandrillApiKey = answers.mandrillApiKey;
 
             done();
         }.bind(this));
@@ -57,6 +63,9 @@ module.exports = generators.Base.extend({
                     }
                     if (property.key.value === 'SESSION_SECRET') {
                         property.value.value = this.sessionSecret;
+                    }
+                    if (property.key.value === 'MANDRILL_API_KEY') {
+                        property.value.value = this.mandrillApiKey;
                     }
                 }, this);
             }
