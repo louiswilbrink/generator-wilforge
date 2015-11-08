@@ -13,3 +13,8 @@ The following prompts allow the generator to integrate with platform services.  
 1.) Firebase Endpoint (e.g my-new-app.firebaseio.com)
 2.) Mandrill API Key
 
+
+## Dependencies
+
+Routing, user management, email, and database capabilities come packaged in the source code contained in the `templates` folder.  This code is pulled in from a separate repository, [app-generator](https://github.com/louiswilbrink/app-generator).  The template folder is updated by performing a `git clone` command.  This will be performed periodically by the maintainer, and avoids manual copying tasks and duplicate code.
+
