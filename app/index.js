@@ -18,14 +18,19 @@ module.exports = generators.Base.extend({
         }, {
             type: 'input',
             name: 'firebaseEndpoint',
-            message: 'What\'s your Firebase endpoint? (ie: ' +
-                'wilforge-generator.firebaseio.com)',
-            default: 'wilforge-generator.firebaseio.com'
+            message: 'What\'s your Firebase endpoint? ',
+            default: 'https://wilforge-generator.firebaseio.com'
+        }, {
+            type: 'input',
+            name: 'sessionSecret',
+            message: 'Make up a session secret passphrase: ',
+            default: 'keyboard cat'
         }];
 
         this.prompt(prompts, function (answers) {
             this.appName = answers.name;
             this.firebaseEndpoint = answers.firebaseEndpoint;
+            this.sessionSecret = answers.sessionSecret;
 
             done();
         }.bind(this));
@@ -50,16 +55,28 @@ module.exports = generators.Base.extend({
 
                 properties.forEach(function (property) {
                     // Set firebase endpoint.
-                    if (property.key.value == 'FIREBASE_ENDPOINT') {
+                    if (property.key.value === 'FIREBASE_ENDPOINT') {
                         property.value.value = this.firebaseEndpoint;
+                    }
+                    if (property.key.value === 'SESSION_SECRET') {
+                        property.value.value = this.sessionSecret;
                     }
                 }, this);
             }
         }, this);
 
+        // Convert AST to file content string.
         var output = escodegen.generate(configAst);
 
-        console.log(output);
+        // Write to configuration.js, including user-provided platform creds.
+        fs.writeFile(__dirname + '/templates/config/configuration.js', output, function (error) {
+            if (error) {
+                console.log('error writing configuration.js');
+            }
+            else {
+                console.log('Successfully wrote configuration.js');
+            }
+        });
     },
     writing: {
         projectFiles: function () {
