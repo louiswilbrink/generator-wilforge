@@ -46,10 +46,8 @@ angular.module('app.components.signUp', [])
             .then(function (response) { 
                 // TODO: Set user service
                 console.log('/register user (200):', response.data.uid);
-                vm.isLoading = false;
             }, function (error) {
                 console.log('/register user (500):', error);
-                vm.isLoading = false;
                 vm.isUnauthorized = true;
             })
             // .. then authenticate with the server.
@@ -73,9 +71,23 @@ angular.module('app.components.signUp', [])
                 vm.isUnauthorized = false;
                 return Auth.withEmail(email, password);
             })
+            // .. then send confirmation email.
+            .then(function (response) {
+                return $http({
+                    method: 'POST',
+                    url: '/send-confirmation-email', 
+                    data: $httpParamSerializer({
+                        email: email
+                    }),
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded'
+                    }
+                });
+            })
             // .. then finally redirect to /dashboard -- you're fully
             // authenticated at this point.
             .then(function (response) {
+                console.log('send confirmation email response:', response);
                 $location.path('/dashboard');
             })
             .catch(function (error) {

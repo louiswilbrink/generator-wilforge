@@ -25,18 +25,19 @@ angular.module('app.components.wilUserMenu', [])
 
         var originatorEv;
 
-        vm.openMenu = function($mdOpenMenu, ev) {
+        this.openMenu = function($mdOpenMenu, ev) {
           originatorEv = ev;
           $mdOpenMenu(ev);
         };
         
-        $scope.showMessages = function(ev) {
+        vm.showMessages = function(ev) {
           // Appending dialog to document.body to cover sidenav in docs app
           // Modal dialogs should fully cover application
           // to prevent interaction outside of dialog
           $mdDialog.show(
             $mdDialog.alert()
-              .parent(angular.element(document.querySelector('#popupContainer')))
+              .parent(
+                  angular.element(document.querySelector('#popupContainer')))
               .clickOutsideToClose(true)
               .title('Messages')
               .content('You have no unread messages.  Good job!')
@@ -46,32 +47,18 @@ angular.module('app.components.wilUserMenu', [])
           );
         };
 
-        $scope.showAdvanced = function(ev) {
+        vm.showProfile = function(ev) {
           $mdDialog.show({
-            controller:  function ($scope, $mdDialog) {
-                $scope.hide = function() {
-                    $mdDialog.hide();
-                };
-                $scope.cancel = function() {
-                    $mdDialog.cancel();
-                };
-                $scope.answer = function(answer) {
-                    $mdDialog.hide(answer);
-                };
-            },
-            templateUrl: 'components/wil-user-menu/dialog-templates/user-profile.html',
+            controller:  'UserProfileCtrl',
+            templateUrl: 
+                'components/wil-user-menu/dialog-templates/user-profile.html',
             parent: angular.element(document.body),
             targetEvent: ev,
-            clickOutsideToClose:true
+            clickOutsideToClose: true
           })
-          .then(function(answer) {
-            $scope.status = 'You said the information was "' + answer + '".';
-          }, function() {
-            $scope.status = 'You cancelled the dialog.';
-          });
         };
 
-        $scope.logout = function () {
+        vm.logout = function () {
             // Unauthenticate with firebase.  This is a synchronous call.
             Auth.logout(); 
 
