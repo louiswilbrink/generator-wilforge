@@ -13,12 +13,55 @@ var dbRef = new Firebase(config.firebaseEndpoint);
 // Configure Firebase references.
 var usersRef = new Firebase(config.firebaseEndpoint + '/users');
 
-// Get updates on usersRef.
+// Called whenever a user is added or removed.
+function getUsers () {
+    var gotUsers = q.defer();
+
+    usersRef.once('value', function (snapshot) {
+        users = snapshot.val();
+        console.log('updated users (' + Object.keys(users).length + ')');
+        gotUsers.resolve();
+    })
+
+    return gotUsers.promise;
+}
+
+function auth (username, password) {
+    var id = q.defer();
+
+    dbRef.authWithPassword({
+        email: username,
+        password: password
+    }, function (error, authData) {
+        if (!error) {
+            id.resolve(authData.uid);
+        }
+        else {
+            id.reject(error); 
+        }
+    });
+
+    return id.promise;
+}
 
 var db = {
     init: function () {
-        return usersRef.on('value', function (snapshot) {
-            users = snapshot.val();
+        return auth('server@imaginapp.com', 'louis').then(function (uid) {
+            var isUsersLoaded = q.defer();
+
+            // Initializing users object on server for lookups.
+            usersRef.once('value', function (snapshot) {
+                users = snapshot.val();
+
+                console.log('init users (' + Object.keys(users).length + ')');
+
+                isUsersLoaded.resolve(uid);
+            });
+
+            return isUsersLoaded.promise;
+        })
+        .catch(function (error) {
+            console.log('Error: db.init', error);    
         });
     },
     // Adding user information to db.
@@ -31,7 +74,15 @@ var db = {
             email: email,
             confirmationId: randomString.generate(10),
             birthday: 'January 1, 1970 00:00:00',
-            isEmailConfirmed: false
+            isEmailConfirmed: false,
+            status: 'active' // or 'delete'
+        }, function (error) {
+            if (!error) {
+                getUsers();
+            }
+            else {
+                console.log('Error adding new user');
+            }
         });
     },
     // Registering user with firebase authentication system.
@@ -80,24 +131,57 @@ var db = {
 
         return confirmationId.promise;
     },
+    /**
+     * @param {String} uid User id
+     * @description
+     * This method sets user.status to 'inactive'.  Call 
+     * `authentication.removeUser` method to de-register user from firebase.
+     */ 
+    deleteUser: function (uid) {
+        console.log('db.deleteUser');
+        var isUpdated = q.defer();
+
+        // Set user.stats to 'inactive' (don't actually delete the user info).
+        usersRef.child(uid).update({
+            status: 'inactive'
+        }, function (error) {
+            if (error) {
+                isUpdated.reject(error);
+            }
+            else {
+                getUsers().then(function () {
+                    isUpdated.resolve(true);
+                });
+            }
+        });
+
+        return isUpdated.promise;
+    },
     updateIsEmailConfirmed: function (uid, isEmailConfirmed) {
+        var isUpdated = q.defer();
+
         usersRef.child(uid).update({
             isEmailConfirmed: isEmailConfirmed
         }, function (error) {
             if (error) {
-                console.log('Error updating isEmailConfirmed:', error);
+                isUpdated.reject(error);
+            }
+            else {
+                isUpdated.resolve(true);
             }
         });
+
+        return isUpdated.promise;
     },
     isCorrectConfirmationId: function (uid, confirmationIdComp) {
         var isCorrect = q.defer();
 
         this.getConfirmationId(uid).then(function (confirmationId) {
-            if (confirmationId ===  confirmationIdComp) {
+            if (confirmationId === confirmationIdComp) {
                 isCorrect.resolve(true);
             }
             else {
-                isCorrect.resolve(false);
+                isCorrect.reject();
             }
         });
 
@@ -130,24 +214,8 @@ var db = {
             return false;
         }
     },
-    // Returns user Id if successful.
-    auth: function (username, password) {
-        var id = q.defer();
-
-        dbRef.authWithPassword({
-            email: username,
-            password: password
-        }, function (error, authData) {
-            if (!error) {
-                id.resolve(authData.uid);
-            }
-            else {
-                id.reject(error); 
-            }
-        });
-
-        return id.promise;
-    }
+    // Returns user id if successful.
+    auth: auth
 };
 
 module.exports = db;

@@ -15,9 +15,10 @@ angular.module('app.components.login', [])
     }
 
     LoginCtrl.$inject = ['$http', '$httpParamSerializer', '$location', 
-        'Auth', 'Config'];
+        'Auth', 'Config', '$log'];
 
-    function LoginCtrl ($http, $httpParamSerializer, $location, Auth, Config) {
+    function LoginCtrl ($http, $httpParamSerializer, $location, 
+        Auth, Config, $log) {
         var vm = this;
 
         vm.email = null;
@@ -44,18 +45,15 @@ angular.module('app.components.login', [])
             // ..then authenticate with Firebase from the browser.
             .then(function (response) {
                 vm.isUnauthorized = false;
-                console.log('server authentication success:', response.status);
                 return Auth.withEmail(email, password);
             })
             .then(function (response) {
-                // TODO: Set user service
-                console.log('Auth.withEmail success:', response.uid);
                 $location.path('/dashboard');
             })
             .catch(function (error) {
                 vm.isUnauthorized = true;
                 vm.isLoading = false;
-                console.log('login error:', error);
+                $log.error('login error:', error);
             });
         }
     }

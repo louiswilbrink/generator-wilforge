@@ -1,7 +1,16 @@
 $primary-color: rgb(16,108,200);
 
+/* User Agent Overrides */
+form {
+    margin-bottom: 0px;
+}
+
 /* Dashboard Page */
 
 .dashboard-page {
     height: 100%;
+}
+
+.centered {
+    text-align: center;
 }

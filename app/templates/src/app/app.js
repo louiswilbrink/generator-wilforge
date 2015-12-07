@@ -13,18 +13,71 @@ angular.module('generatedApp', ['ngRoute', 'ngMaterial', 'ngMessages',
     $routeProvider.when('/', {
         templateUrl: 'pages/login.html',
         resolve: {
-          config: function (Config) {
-              return Config.init();
-          }
+            config: function (Config) {
+                return Config.init();
+            },
+            isAuthenticated: function ($http, $location, Auth, $q, User) {
+
+                var isAuthenticated = $q.defer();
+                
+                // If the client is authenticated with the server AND firebase,
+                // go directly to the dashboard.  If not, resolve the promise 
+                // to display the page (login).
+                //
+                // First checking server authentication..
+                $http.get('/is-authenticated').then(function () {
+                    console.log('/is-authenticated (200)');
+                    return Auth.getAuthAsPromise();
+                })
+                // .. then getting the authentication state of the client..
+                .then(function (authState) {
+
+                    // If a user id exists, then the client is currently
+                    // authenticated with Firebase.
+                    if (authState.uid) {
+                        // Populate User data: name, email, etc..
+                        User.init(authState.uid);
+
+                        console.log('[firebase] - authenticated');
+
+                        $location.path('/dashboard');
+                    }
+                    else {
+                        console.log('Client NOT authenticated with Firebase');
+
+                        // Since the client isn't authenticated with Firebase,
+                        // resolve the promise and load the login page.
+                        isAuthenticated.resolve();
+                    }
+                })
+                .catch(function (error) {
+                    console.log('Client not authenticated with server and/or' +
+                        ' firebase');
+
+                    // Only resolve if the client is unauthenticated.
+                    // This will load the login page.
+                    isAuthenticated.resolve(); 
+                });
+
+                return isAuthenticated.promise;
+            }
         },
     })
     .when('/sign-up', {
-        templateUrl: 'pages/sign-up.html'
+        templateUrl: 'pages/sign-up.html',
+        resolve: {
+          config: function (Config) {
+              return Config.init();
+          }
+        }
     })
     .when('/dashboard', {
         templateUrl: 'pages/dashboard.html',
         controller: 'DashboardCtrl',
         resolve: {
+            config: function (Config) {
+                return Config.init();
+            },
             serverAuth: function ($http, $location) {
                 return $http.get('/is-authenticated')
                     .success(function (payload) {
