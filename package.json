@@ -6,20 +6,19 @@
     "app",
     "route"
   ],
-  "main": "start.js",
+  "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
     "type": "git",
-    "url": "git@github.com:louiswilbrink/app-generator.git"
+    "url": "git@github.com:louiswilbrink/generator-wilforge.git"
   },
   "keywords": [
     "yeoman-generator",
     "angular",
     "firebase",
     "mandrill",
-    "twilio",
     "user management",
     "email administration"
   ],
