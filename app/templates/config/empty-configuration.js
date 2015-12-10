@@ -11,8 +11,11 @@ module.exports = {
     },
     dev: {
         'ROOT_DIR': path.normalize(__dirname + '/../'),
+        'APP_NAME': '',
         'FIREBASE_ENDPOINT': '',
         'MANDRILL_API_KEY': '',
+        'SERVER_EMAIL': '',
+        'SERVER_PASSWORD': '',
         'INFO_EMAIL_ADDRESS': '',
         'ENV': 'dev',
         'DOMAIN': 'localhost',
@@ -21,7 +24,10 @@ module.exports = {
     },
     staging: {
         'ROOT_DIR': path.normalize(__dirname + '/../'),
+        'APP_NAME': '',
         'FIREBASE_ENDPOINT': '',
+        'SERVER_EMAIL': '',
+        'SERVER_PASSWORD': '',
         'ENV': 'staging',
         'IP_ADDRESS': '',
         'SUBDOMAIN': 'staging',
@@ -31,7 +37,10 @@ module.exports = {
     },
     production: {
         'ROOT_DIR': path.normalize(__dirname + '/../'),
+        'APP_NAME': '',
         'FIREBASE_ENDPOINT': '',
+        'SERVER_EMAIL': '',
+        'SERVER_PASSWORD': '',
         'ENV': 'production',
         'IP_ADDRESS': '',
         'SUBDOMAIN': 'www',

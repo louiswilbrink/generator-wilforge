@@ -15,7 +15,7 @@ module.exports = generators.Base.extend({
 
         var prompts = [{
             type: 'input',
-            name: 'name',
+            name: 'appName',
             message: 'What\'s the name of your project? ',
             default: 'myApp'
         }, {
@@ -30,6 +30,11 @@ module.exports = generators.Base.extend({
             default: 'FTSLQUWZ5DEvWFtLRtFkbBodY0GtwPsSnjczz6Tl'
         }, {
             type: 'input',
+            name: 'serverPassword',
+            message: 'Set a password for the server\'s access to Firebase: ',
+            default: 'any_password'
+        }, {
+            type: 'input',
             name: 'mandrillApiKey',
             message: 'What\'s your Mandrill Api Key? ',
             default: 'keJof0bEYRH6hJopQBKRpw'
@@ -41,9 +46,10 @@ module.exports = generators.Base.extend({
         }];
 
         this.prompt(prompts, function (answers) {
-            this.appName = answers.name;
+            this.appName = answers.appName;
             this.firebaseEndpoint = answers.firebaseEndpoint;
             this.firebaseSecret = answers.firebaseSecret;
+            this.serverPassword = answers.serverPassword;
             this.sessionSecret = answers.sessionSecret;
             this.mandrillApiKey = answers.mandrillApiKey;
 
@@ -51,6 +57,7 @@ module.exports = generators.Base.extend({
         }.bind(this));
     },
     configuring: function () {
+
         // Create configuration file.
         var srcCode = fs.readFileSync(__dirname + '/templates/config/empty-configuration.js');
         var configAst = esprima.parse(srcCode, { loc: false, comment: true });
@@ -67,8 +74,19 @@ module.exports = generators.Base.extend({
 
                 properties.forEach(function (property) {
                     // Set firebase endpoint.
+                    if (property.key.value === 'APP_NAME') {
+                        property.value.value = this.appName;
+                    }
                     if (property.key.value === 'FIREBASE_ENDPOINT') {
                         property.value.value = this.firebaseEndpoint;
+                    }
+                    if (property.key.value === 'SERVER_EMAIL') {
+                        property.value.value = 'server@' + 
+                                               this.appName.toLowerCase() + 
+                                               '.com';
+                    }
+                    if (property.key.value === 'SERVER_PASSWORD') {
+                        property.value.value = this.serverPassword;
                     }
                     if (property.key.value === 'SESSION_SECRET') {
                         property.value.value = this.sessionSecret;
@@ -88,10 +106,13 @@ module.exports = generators.Base.extend({
     },
     writing: {
         createUsersMap: function () {
-            console.log('createUsersMap')
+            var done = this.async();
              
             // Create Firebase reference with user supplied endpoint.
             var ref = new Firebase(this.firebaseEndpoint);
+
+            // Create in-scope invocation context to use in the firebase callback.
+            var _this = this;
 
             // Creating schema in firebase.
             ref.child('users').child('uid').set({
@@ -100,32 +121,37 @@ module.exports = generators.Base.extend({
                 address:  '_address',
                 birthday: '_birthday',
                 phone:    '_phone'
-            });
-
-            // Create server user.
-            ref.createUser({
-                email: 'server@' + this.appName + '.com',
-                password: this.serverPassword
-            }, function (error, userData) {
+            }, function (error) {
                 if (error) {
-                    console.log('There was an error creating server creds in Firebase', error);
+                    console.log('Error setting users schema', error);
                 }
                 else {
-                    console.log('Created server user in Firebase:', userData);
-                    this.serverUUID = userData.uid;
+                    console.log('wrote users schema to Firebase');
                 }
+
+                // Create server user.
+                ref.createUser({
+                    email: 'server@' + _this.appName + '.com',
+                    password: _this.serverPassword
+                }, function (error, userData) {
+                    if (error) {
+                        console.log('There was an error creating server creds in Firebase', error);
+                    }
+                    else {
+                        console.log('Created user in Firebase:', userData);
+
+                        // Replace dummy value for server UUID.
+                        fs.createReadStream(__dirname + '/security-rules.json')
+                            .pipe(replaceStream('serverUUID', userData.uid))
+                            // Write security rules to Firebase.
+                            .pipe(request.put(_this.firebaseEndpoint + 
+                                  '/.settings/rules.json?auth=' + 
+                                  _this.firebaseSecret));
+                    }
+
+                    done();
+                });
             });
-        }
-        uploadRules: function () {
-            console.log('uploadRules');
-
-            // Replace dummy value for server UUID.
-            fs.createReadStream('security-rules.json')
-                .pipe(replaceStream('serverUUID', serverUUID))
-                .pipe(process.stdout);
-
-            // Upload new security rules to Firebase.
-            fs.createReadStream('security-rules.json').pipe(request.put(this.firebaseEndpoint + '/.settings/rules.json?auth=' + this.firebaseSecret));
         },
         projectFiles: function () {
             var files   = this.expandFiles('**/*', { cwd: this.sourceRoot(), dot: true });
@@ -157,10 +183,19 @@ module.exports = generators.Base.extend({
             }, this);
         }
     },
-    install: function () {
-        this.npmInstall();
-        this.bowerInstall();
-    },
+    //install: function () {
+        //this.npmInstall();
+        //this.bowerInstall();
+
+        //var done = this.async();
+        //this.npmInstall('', function () {
+            //console.log('Installed all node packages');
+            //this.bowerInstall('', function () {
+                //console.log('Installed all bower packages');
+                //done();
+            //});
+        //})
+    //},
     end: function () {
         // Remove temp-configuration.js
         fs.unlink(__dirname + '/templates/config/temp-configuration.js', function (error) {
@@ -168,5 +203,7 @@ module.exports = generators.Base.extend({
                 console.log('Error removing temp-configuration.js', error);
             }
         });
+
+        console.log('all finished!');
     }
 });
