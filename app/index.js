@@ -37,7 +37,7 @@ module.exports = generators.Base.extend({
             type: 'input',
             name: 'mandrillApiKey',
             message: 'What\'s your Mandrill Api Key? ',
-            default: 'keJof0bEYRH6hJopQBKRpw'
+            default: 'keJof0bEJIL6hJjqQBKRpw'
         }, {
             type: 'input',
             name: 'sessionSecret',
