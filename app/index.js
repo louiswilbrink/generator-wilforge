@@ -115,7 +115,7 @@ module.exports = generators.Base.extend({
             var _this = this;
 
             // Creating schema in firebase.
-            ref.child('users').child('uid').set({
+            ref.child('users').child('_uid').set({
                 email:    '_email',
                 name:     '_name',
                 address:  '_address',
@@ -183,19 +183,19 @@ module.exports = generators.Base.extend({
             }, this);
         }
     },
-    //install: function () {
-        //this.npmInstall();
-        //this.bowerInstall();
+    install: function () {
+        this.npmInstall();
+        this.bowerInstall();
 
-        //var done = this.async();
-        //this.npmInstall('', function () {
-            //console.log('Installed all node packages');
-            //this.bowerInstall('', function () {
-                //console.log('Installed all bower packages');
-                //done();
-            //});
-        //})
-    //},
+        var done = this.async();
+        this.npmInstall('', function () {
+            console.log('Installed all node packages');
+            this.bowerInstall('', function () {
+                console.log('Installed all bower packages');
+                done();
+            });
+        })
+    },
     end: function () {
         // Remove temp-configuration.js
         fs.unlink(__dirname + '/templates/config/temp-configuration.js', function (error) {
