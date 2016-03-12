@@ -187,20 +187,23 @@ module.exports = generators.Base.extend({
             }, this);
         }
     },
-    install: function () {
-        console.log('installing npm and bower modules..');
-        this.npmInstall();
-        this.bowerInstall();
+    /*
+     * Currently stalls project generation.
+     */
+    //install: function () {
+        //console.log('installing npm and bower modules..');
+        //this.npmInstall();
+        //this.bowerInstall();
 
-        var done = this.async();
-        this.npmInstall('', function () {
-            console.log('Installed all node packages');
-            this.bowerInstall('', function () {
-                console.log('Installed all bower packages');
-                done();
-            });
-        })
-    },
+        //var done = this.async();
+        //this.npmInstall('', function () {
+            //console.log('Installed all node packages');
+            //this.bowerInstall('', function () {
+                //console.log('Installed all bower packages');
+                //done();
+            //});
+        //})
+    //},
     end: function () {
         // Remove temp-configuration.js
         fs.unlink(__dirname + '/templates/config/temp-configuration.js', function (error) {

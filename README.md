@@ -20,6 +20,9 @@ The following prompts allow the generator to integrate with platform services.  
 
 Once the generator is finished running, start the application using the following command:
 
+`npm install`
+`bower install`
+
 `gulp serve`
 
 ## Dependencies
