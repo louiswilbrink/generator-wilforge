@@ -2,4 +2,5 @@ node_modules/
 app/templates/.git/
 app/templates/.gitignore
 app/templates/README.md
+app/templates/config/temp-configuration.js
 *.swp

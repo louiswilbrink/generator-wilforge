@@ -43,6 +43,11 @@ module.exports = generators.Base.extend({
             name: 'sessionSecret',
             message: 'Make up a session secret passphrase: ',
             default: 'keyboard cat'
+        }, {
+            type: 'input',
+            name: 'adminEmail',
+            message: 'Enter an email for the admin account: ',
+            default: 'admin@mycompany.com'
         }];
 
         this.prompt(prompts, function (answers) {
@@ -52,6 +57,7 @@ module.exports = generators.Base.extend({
             this.serverPassword = answers.serverPassword;
             this.sessionSecret = answers.sessionSecret;
             this.mandrillApiKey = answers.mandrillApiKey;
+            this.adminEmail = answers.adminEmail;
 
             done();
         }.bind(this));
@@ -81,9 +87,7 @@ module.exports = generators.Base.extend({
                         property.value.value = this.firebaseEndpoint;
                     }
                     if (property.key.value === 'SERVER_EMAIL') {
-                        property.value.value = 'server@' + 
-                                               this.appName.toLowerCase() + 
-                                               '.com';
+                        property.value.value = this.adminEmail;
                     }
                     if (property.key.value === 'SERVER_PASSWORD') {
                         property.value.value = this.serverPassword;
@@ -131,7 +135,7 @@ module.exports = generators.Base.extend({
 
                 // Create server user.
                 ref.createUser({
-                    email: 'server@' + _this.appName + '.com',
+                    email: _this.adminEmail,
                     password: _this.serverPassword
                 }, function (error, userData) {
                     if (error) {
@@ -184,6 +188,7 @@ module.exports = generators.Base.extend({
         }
     },
     install: function () {
+        console.log('installing npm and bower modules..');
         this.npmInstall();
         this.bowerInstall();
 
