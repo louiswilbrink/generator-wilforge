@@ -109,54 +109,66 @@ module.exports = generators.Base.extend({
         fs.writeFileSync(__dirname + '/templates/config/temp-configuration.js', output);
     },
     writing: {
-        createUsersMap: function () {
-            var done = this.async();
-             
-            // Create Firebase reference with user supplied endpoint.
-            var ref = new Firebase(this.firebaseEndpoint);
+      createUsersMap: function () {
+        var done = this.async();
+         
+        // Create Firebase reference with user supplied endpoint.
+        var ref = new Firebase(this.firebaseEndpoint);
 
-            // Create in-scope invocation context to use in the firebase callback.
-            var _this = this;
+        // Create in-scope invocation context to use in the firebase callback.
+        var _this = this;
 
-            // Creating schema in firebase.
-            ref.child('users').child('_uid').set({
-                email:    '_email',
-                name:     '_name',
-                address:  '_address',
-                birthday: '_birthday',
-                phone:    '_phone'
-            }, function (error) {
+        // Creating schema in firebase.
+        ref.child('users').child('_uid').set({
+          email:    '_email',
+          name:     '_name',
+          address:  '_address',
+          birthday: '_birthday',
+          phone:    '_phone'
+        }, function (error) {
+          if (error) {
+            console.log('Error setting users schema', error);
+          }
+          else {
+            console.log('wrote users schema to Firebase');
+          }
+
+          // Create server user.
+          ref.createUser({
+            email: _this.adminEmail,
+            password: _this.serverPassword
+          }, function (error, userData) {
+            if (error) {
+              console.log('There was an error creating server creds in Firebase', error);
+            }
+            else {
+              console.log('Created user in Firebase:', userData);
+
+              // Replace dummy value for server UUID.
+              fs.createReadStream(__dirname + '/security-rules.json')
+                .pipe(replaceStream('serverUUID', userData.uid))
+                // Write security rules to Firebase.
+                .pipe(request.put(_this.firebaseEndpoint + 
+                    '/.settings/rules.json?auth=' + 
+                    _this.firebaseSecret));
+
+              // Add admin email to list of users.
+              ref.child('users').child(userData.uid).set({
+                email: _this.adminEmail
+              }, function (error) {
                 if (error) {
-                    console.log('Error setting users schema', error);
+                  console.log('Error saving admin user');
                 }
                 else {
-                    console.log('wrote users schema to Firebase');
+                  console.log('Admin user saved');
                 }
+              });
+            }
 
-                // Create server user.
-                ref.createUser({
-                    email: _this.adminEmail,
-                    password: _this.serverPassword
-                }, function (error, userData) {
-                    if (error) {
-                        console.log('There was an error creating server creds in Firebase', error);
-                    }
-                    else {
-                        console.log('Created user in Firebase:', userData);
-
-                        // Replace dummy value for server UUID.
-                        fs.createReadStream(__dirname + '/security-rules.json')
-                            .pipe(replaceStream('serverUUID', userData.uid))
-                            // Write security rules to Firebase.
-                            .pipe(request.put(_this.firebaseEndpoint + 
-                                  '/.settings/rules.json?auth=' + 
-                                  _this.firebaseSecret));
-                    }
-
-                    done();
-                });
-            });
-        },
+            done();
+          });
+        });
+      },
         projectFiles: function () {
             var files   = this.expandFiles('**/*', { cwd: this.sourceRoot(), dot: true });
             var ignores = [
@@ -205,13 +217,13 @@ module.exports = generators.Base.extend({
         //})
     //},
     end: function () {
-        // Remove temp-configuration.js
-        fs.unlink(__dirname + '/templates/config/temp-configuration.js', function (error) {
-            if (error) {
-                console.log('Error removing temp-configuration.js', error);
-            }
-        });
+      // Remove temp-configuration.js
+      fs.unlink(__dirname + '/templates/config/temp-configuration.js', function (error) {
+        if (error) {
+          console.log('Error removing temp-configuration.js', error);
+        }
+      });
 
-        console.log('all finished!');
+      console.log('all finished! Press Ctrl+C to return to command line');
     }
 });
