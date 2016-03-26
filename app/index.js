@@ -35,9 +35,9 @@ module.exports = generators.Base.extend({
             default: 'any_password'
         }, {
             type: 'input',
-            name: 'mandrillApiKey',
-            message: 'What\'s your Mandrill Api Key? ',
-            default: 'keJof0bEJIL6hJjqQBKRpw'
+            name: 'sendgridApiKey',
+            message: 'What\'s your SendGrid API Key? ',
+            default: ''
         }, {
             type: 'input',
             name: 'sessionSecret',
@@ -56,7 +56,7 @@ module.exports = generators.Base.extend({
             this.firebaseSecret = answers.firebaseSecret;
             this.serverPassword = answers.serverPassword;
             this.sessionSecret = answers.sessionSecret;
-            this.mandrillApiKey = answers.mandrillApiKey;
+            this.sendgridApiKey = answers.sendgridApiKey;
             this.adminEmail = answers.adminEmail;
 
             done();
@@ -95,8 +95,8 @@ module.exports = generators.Base.extend({
                     if (property.key.value === 'SESSION_SECRET') {
                         property.value.value = this.sessionSecret;
                     }
-                    if (property.key.value === 'MANDRILL_API_KEY') {
-                        property.value.value = this.mandrillApiKey;
+                    if (property.key.value === 'SENDGRID_API_KEY') {
+                        property.value.value = this.sendgridApiKey;
                     }
                 }, this);
             }
