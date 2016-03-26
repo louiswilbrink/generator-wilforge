@@ -1,6 +1,6 @@
 # Wilforge Generator
 
-This is a generator used to seed projects created by Wilforge Labs.  The generator provides server/client architecture using ExpressJS and Angular.  It also provides user management out of the box by using a Firebase endpoint, as well as simple email correspondence using the Mandrill API.
+This is a generator used to seed projects created by Wilforge Labs.  The generator provides server/client architecture using ExpressJS and Angular.  It also provides user management out of the box by using a Firebase endpoint, as well as simple email correspondence using the SendGrid API.
 
 ## Getting Started
 
@@ -14,7 +14,7 @@ The following prompts allow the generator to integrate with platform services.  
 
 1.) Firebase Endpoint (e.g my-new-app.firebaseio.com)
 
-2.) Mandrill API Key
+2.) SendGrid API Key
 
 ### Running the App
 
