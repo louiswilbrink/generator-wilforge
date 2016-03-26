@@ -89,6 +89,9 @@ module.exports = generators.Base.extend({
                     if (property.key.value === 'SERVER_EMAIL') {
                         property.value.value = this.adminEmail;
                     }
+                    if (property.key.value === 'INFO_EMAIL_ADDRESS') {
+                        property.value.value = this.adminEmail;
+                    }
                     if (property.key.value === 'SERVER_PASSWORD') {
                         property.value.value = this.serverPassword;
                     }
